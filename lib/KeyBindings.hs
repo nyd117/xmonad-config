@@ -56,7 +56,7 @@ import XMonad.Prompt.Ssh
 myKeys :: String -> [([Char], X ())]
 myKeys home =
     -- Xmonad
-        [ ("M-C-r", spawn "notify-send Xmonad Recompiling && xmonad --recompile && notify-send Xmonad Recompiled") -- Recompiles xmonad
+        [ ("M-C-r", spawn "notify-send Xmonad Recompiling && xmonad --recompile && notify-send Xmonad Recompiled") -- Recompiles xmonad. If using ~/.config/xmonad/ make sure ~/.xmonad doesn't exist.
         , ("M-S-r", spawn "xmonad --restart && notify-send Xmonad Restarted")   -- Restarts xmonad
         , ("M-S-q", io exitSuccess)             -- Quits xmonad
 

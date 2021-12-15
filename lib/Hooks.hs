@@ -58,6 +58,7 @@ myManageHook = (isDialog --> doF W.swapUp)      -- THIS IS THE REQUIRED LINE
      , isDialog --> doCenterFloat
      , isPopup --> doCenterFloat
      , isSkipTaskBar --> doCenterFloat -- intellij IDEs splash
+     , className =? "discord" --> viewShift ( myWorkspaces !! 5 )
      ] <+> namedScratchpadManageHook myScratchPads
      where viewShift = doF . liftM2 (.) W.greedyView W.shift
      

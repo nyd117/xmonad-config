@@ -42,8 +42,10 @@ import XMonad.Layout.WindowNavigation
 import XMonad.Layout.WindowArranger (windowArrange, WindowArrangerMsg(..))
 import qualified XMonad.Layout.ToggleLayouts as T (toggleLayouts, ToggleLayout(Toggle))
 import qualified XMonad.Layout.MultiToggle as MT (Toggle(..))
+import XMonad.Layout.PerWorkspace
 
 import Defaults (myFont)
+import WorkSpaces (myWorkspaces)
 
 
 --Makes setting the spacingRaw simpler to write. The spacingRaw module adds a configurable amount of space around windows.
@@ -61,14 +63,14 @@ mySpacing' i = spacingRaw True (Border i i i i) True (Border i i i i) True
 tall     = renamed [Replace "tall"]
            $ windowNavigation
            $ addTabs shrinkText myTabTheme
-           $ subLayout [] (smartBorders Simplest)
+           -- $ subLayout [] (smartBorders Simplest)
            $ limitWindows 12
            $ mySpacing 8
            $ ResizableTall 1 (3/100) (1/2) []
 magnify  = renamed [Replace "magnify"]
            $ windowNavigation
            $ addTabs shrinkText myTabTheme
-           $ subLayout [] (smartBorders Simplest)
+           -- $ subLayout [] (smartBorders Simplest)
            $ magnifier
            $ limitWindows 12
            $ mySpacing 8
@@ -76,17 +78,17 @@ magnify  = renamed [Replace "magnify"]
 monocle  = renamed [Replace "monocle"]
            $ windowNavigation
            $ addTabs shrinkText myTabTheme
-           $ subLayout [] (smartBorders Simplest)
+           -- $ subLayout [] (smartBorders Simplest)
            $ limitWindows 20 Full
 floats   = renamed [Replace "floats"]
            $ windowNavigation
            $ addTabs shrinkText myTabTheme
-           $ subLayout [] (smartBorders Simplest)
+           -- $ subLayout [] (smartBorders Simplest)
            $ limitWindows 20 simplestFloat
 grid     = renamed [Replace "grid"]
            $ windowNavigation
            $ addTabs shrinkText myTabTheme
-           $ subLayout [] (smartBorders Simplest)
+           -- $ subLayout [] (smartBorders Simplest)
            $ limitWindows 12
            $ mySpacing 8
            $ mkToggle (single MIRROR)
@@ -94,20 +96,20 @@ grid     = renamed [Replace "grid"]
 spirals  = renamed [Replace "spirals"]
            $ windowNavigation
            $ addTabs shrinkText myTabTheme
-           $ subLayout [] (smartBorders Simplest)
+           -- $ subLayout [] (smartBorders Simplest)
            $ mySpacing' 8
            $ spiral (6/7)
 threeCol = renamed [Replace "threeCol"]
            $ windowNavigation
            $ addTabs shrinkText myTabTheme
-           $ subLayout [] (smartBorders Simplest)
+           -- $ subLayout [] (smartBorders Simplest)
            $ limitWindows 7
            $ mySpacing' 4
            $ ThreeCol 1 (3/100) (1/2)
 threeRow = renamed [Replace "threeRow"]
            $ windowNavigation
            $ addTabs shrinkText myTabTheme
-           $ subLayout [] (smartBorders Simplest)
+           -- $ subLayout [] (smartBorders Simplest)
            $ limitWindows 7
            $ mySpacing' 4
            -- Mirror takes a layout and rotates it by 90 degrees.
@@ -121,7 +123,7 @@ tabs     = renamed [Replace "tabs"]
 tcm      = named "tcm"
          $ windowNavigation
          $ addTabs shrinkText myTabTheme
-         $ subLayout [] (smartBorders Simplest)
+         -- $ subLayout [] (smartBorders Simplest)
          $ mySpacing 8
          $ ThreeColMid 1 (1 / 10) (1 / 2)
 
@@ -146,11 +148,13 @@ myShowWNameTheme = def
 
 -- The layout hook
 myLayoutHook = avoidStruts $ mouseResize $ windowArrange $ T.toggleLayouts floats
-               $ mkToggle (NBFULL ?? NOBORDERS ?? EOT) myDefaultLayout
+               $ mkToggle (NBFULL ?? NOBORDERS ?? EOT) perWorkSpace
              where
+               perWorkSpace = onWorkspaces works borderlessMonocle $
+                              myDefaultLayout
                myDefaultLayout =     tall
                                  ||| magnify
-                                 ||| noBorders monocle
+                                 ||| borderlessMonocle
                                  ||| floats
                                  ||| noBorders tabs
                                  ||| grid
@@ -158,5 +162,7 @@ myLayoutHook = avoidStruts $ mouseResize $ windowArrange $ T.toggleLayouts float
                                  ||| threeCol
                                  ||| threeRow
                                  ||| tcm
+               borderlessMonocle = noBorders monocle
+               works = take 3 myWorkspaces
                                  
 -- the above definition myDefaultLayout is necessary to avoid type ambiguity of the above layout definitions the way this is written.
