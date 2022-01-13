@@ -42,7 +42,7 @@ myStartupHook = do { spawnOnce "lxpolkit &"
 }
 
 myManageHook :: XMonad.Query (Data.Monoid.Endo WindowSet)
-myManageHook = (isDialog --> doF W.swapUp)      -- THIS IS THE REQUIRED LINE
+myManageHook = (isDialog --> doF W.shiftMaster)      -- THIS IS THE REQUIRED LINE
                <+> insertPosition Above Newer -- same as xmonad default but explicit
                <+> composeAll
      -- using 'doShift ( myWorkspaces !! 7)' sends program to workspace 8!
