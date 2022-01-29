@@ -45,7 +45,7 @@ import qualified XMonad.Layout.MultiToggle as MT (Toggle(..))
 import XMonad.Layout.PerWorkspace
 
 import Defaults (myFont)
-import WorkSpaces (myWorkspaces)
+import WorkSpaces (developmentWs, browsingWs, systemWs)
 
 
 --Makes setting the spacingRaw simpler to write. The spacingRaw module adds a configurable amount of space around windows.
@@ -120,11 +120,18 @@ tabs     = renamed [Replace "tabs"]
            -- I cannot add spacing to this layout because it will
            -- add spacing between window and tabs which looks bad.
            $ tabbed shrinkText myTabTheme
-tcm      = named "tcm"
+tcm      = renamed [Replace "tcm"]
          $ windowNavigation
          $ addTabs shrinkText myTabTheme
          -- $ subLayout [] (smartBorders Simplest)
          $ mySpacing 8
+         $ ThreeColMid 1 (1 / 10) (1 / 2)
+
+tcms     = renamed [Replace "tcm"]
+         $ windowNavigation
+         $ addTabs shrinkText myTabTheme
+         -- $ subLayout [] (smartBorders Simplest)
+         $ mySpacing 3
          $ ThreeColMid 1 (1 / 10) (1 / 2)
 
 -- setting colors for tabs layout and tabs sublayout.
@@ -150,9 +157,10 @@ myShowWNameTheme = def
 myLayoutHook = avoidStruts $ mouseResize $ windowArrange $ T.toggleLayouts floats
                $ mkToggle (NBFULL ?? NOBORDERS ?? EOT) perWorkSpace
              where
-               perWorkSpace = onWorkspaces works borderlessMonocle $
+               perWorkSpace = onWorkspaces works tcms $
+                              onWorkspace browsingWs borderlessMonocle $
                               myDefaultLayout
-               myDefaultLayout =     tall
+               myDefaultLayout = tall
                                  ||| magnify
                                  ||| borderlessMonocle
                                  ||| floats
@@ -163,6 +171,6 @@ myLayoutHook = avoidStruts $ mouseResize $ windowArrange $ T.toggleLayouts float
                                  ||| threeRow
                                  ||| tcm
                borderlessMonocle = noBorders monocle
-               works = take 3 myWorkspaces
+               works = [developmentWs, systemWs]
                                  
 -- the above definition myDefaultLayout is necessary to avoid type ambiguity of the above layout definitions the way this is written.

@@ -198,8 +198,8 @@ myKeys home =
         , ("<XF86Mail>", runOrRaise "thunderbird" (resource =? "thunderbird"))
         , ("<XF86Calculator>", runOrRaise "qalculate-gtk" (resource =? "qalculate-gtk"))
         , ("<XF86Eject>", spawn "toggleeject")
-        , ("<Print>", spawn "scrot ~/Pictures/Screenshots/\"$(date +%Y_%m_%d_%H%M%S)\" && notify-send \"Full Screenshot taken at ~/Pictures/Screenshots/\"$(date +%Y_%m_%d_%H%M%S)\"\"")
-        , ("M1-<Print>", spawn "scrot -u ~/Pictures/Screenshots/\"$(date +%Y_%m_%d_%H%M%S)\" && notify-send \"Window Screenshot taken at ~/Pictures/Screenshots/\"$(date +%Y_%m_%d_%H%M%S)\"\"")  -- M1 is Alt in xmodmap output
+        , ("<Print>", spawn "scrot ~/Pictures/Screenshots/\"$(date +%Y_%m_%d_%H%M%S.png)\" && notify-send \"Full Screenshot taken at ~/Pictures/Screenshots/\"$(date +%Y_%m_%d_%H%M%S)\"\"")
+        , ("M1-<Print>", spawn "scrot -u ~/Pictures/Screenshots/\"$(date +%Y_%m_%d_%H%M%S.png)\" && notify-send \"Window Screenshot taken at ~/Pictures/Screenshots/\"$(date +%Y_%m_%d_%H%M%S)\"\"")  -- M1 is Alt in xmodmap output
         ]
     -- Appending search engine prompts to keybindings list.
     -- Look at "search engines" section of this config for values for "k".
@@ -207,8 +207,11 @@ myKeys home =
     -- asks the shell what browser the user likes. If the user hasn't defined any $BROWSER, defaults to returning "firefox",
         ++ [("M-s " ++ k, S.promptSearch nydXPConfig' f) | (k,f) <- searchList ]
         ++ [("M-S-s " ++ k, S.selectSearchBrowser "vivaldi-stable" f) | (k,f) <- searchList ]
+        -- adding navigation functionality for extra workspaces
         ++ [("M-S-" ++ k, windows $ W.shift ws) | (k,ws) <- myExtraWorkspaces]
-        ++ [("M-" ++ k,  windows $ W.greedyView ws) | (k,ws) <- myExtraWorkspaces]
+        ++ [("M-" ++ k, windows $ W.greedyView ws) | (k,ws) <- myExtraWorkspaces]
+        -- adding functionality to shift window to any workspace and focus on it
+        ++ [("M-C-" ++ k, windows $ W.greedyView ws . W.shift ws) | (k,ws) <- zip myWorkspacesKeys myWorkspaces ]
     -- The following lines are needed for named scratchpads.
           where nonNSP          = WSIs (return (\ws -> W.tag ws /= "nsp"))
                 nonEmptyNonNSP  = WSIs (return (\ws -> isJust (W.stack ws) && W.tag ws /= "nsp"))

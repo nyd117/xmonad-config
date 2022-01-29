@@ -42,23 +42,20 @@ myStartupHook = do { spawnOnce "lxpolkit &"
 }
 
 myManageHook :: XMonad.Query (Data.Monoid.Endo WindowSet)
-myManageHook = (isDialog --> doF W.shiftMaster)      -- THIS IS THE REQUIRED LINE
-               <+> insertPosition Above Newer -- same as xmonad default but explicit
+myManageHook = (isDialog --> doF W.shiftMaster) -- if isDialog set it as master window
+               <+> insertPosition Above Newer -- same as xmonad default but explicit (brings current window to front)
                <+> composeAll
-     -- using 'doShift ( myWorkspaces !! 7)' sends program to workspace 8!
-     -- I'm doing it this way because otherwise I would have to write out the full
-     -- name of my workspaces, and the names would very long if using clickable workspaces.
-     [ className =? "Vivaldi-stable" --> viewShift ( myWorkspaces !! 1 )
-     , className =? "Sublime_text" --> viewShift ( myWorkspaces !! 0 )
+     [ className =? "Vivaldi-stable" --> viewShift browsingWs
+     , className =? "Sublime_text" --> viewShift developmentWs
      , className =? "Gimp"    --> doFloat
      , title =? "Oracle VM VirtualBox Manager" --> doFloat
-     , className =? "VirtualBox Manager" --> viewShift ( myWorkspaces !! 4 )
-     , className =? "vlc" --> viewShift ( myWorkspaces !! 7 )
+     , className =? "VirtualBox Manager" --> viewShift virtualizationWs
+     , className =? "vlc" --> viewShift videoWs
      , (className =? "firefox" <&&> resource =? "Dialog") --> doFloat  -- Float Firefox Dialog
      , isDialog --> doCenterFloat
      , isPopup --> doCenterFloat
      , isSkipTaskBar --> doCenterFloat -- intellij IDEs splash
-     , className =? "discord" --> viewShift ( myWorkspaces !! 5 )
+     , className =? "discord" --> viewShift imWs
      ] <+> namedScratchpadManageHook myScratchPads
      where viewShift = doF . liftM2 (.) W.greedyView W.shift
      
@@ -75,13 +72,13 @@ myLogHookBottom h = dynamicLogWithPP . namedScratchpadFilterOutWorkspacePP $ wsP
 wsPP :: PP
 wsPP = xmobarPP
         { -- ppOutput = \x -> hPutStrLn xmproc x
-          ppCurrent = xmobarColor "#90a959" "" . wrap "[" "]" -- Current workspace in xmobar
-        , ppVisible = xmobarColor "#90a959" ""                -- Visible but not current workspace
-        , ppHidden = xmobarColor "#6a9fb5" "" . wrap "*" "" . clickable (zip myWorkspaces myWorkspacesKeys)   -- Hidden workspaces in xmobar
-        , ppHiddenNoWindows = xmobarColor "#aa759f" "" . clickable (zip myWorkspaces myWorkspacesKeys)       -- Hidden workspaces (no windows)
+          ppCurrent = xmobarColor "#90a959" "" . wrap "[ " " ]" -- Current workspace in xmobar
+        , ppVisible = xmobarColor "#90a959" "" . wrap " " " "   -- Visible but not current workspace
+        , ppHidden = xmobarColor "#6a9fb5" "" . wrap " *" " " . clickable (zip myWorkspaces myWorkspacesKeys)   -- Hidden workspaces in xmobar
+        , ppHiddenNoWindows = xmobarColor "#aa759f" "" . wrap " " " " . clickable (zip myWorkspaces myWorkspacesKeys)       -- Hidden workspaces (no windows)
         , ppTitle = xmobarColor "#b3afc2" "" . shorten 120     -- Title of active window in xmobar
         , ppSep =  "<fc=#d0d0d0> | </fc>"          -- Separators in xmobar
-        , ppUrgent = xmobarColor "#C45500" "" . wrap "!" "!" . clickable (zip myWorkspaces myWorkspacesKeys)  -- Urgent workspace
+        , ppUrgent = xmobarColor "#C45500" "" . wrap "! " " !" . clickable (zip myWorkspaces myWorkspacesKeys)  -- Urgent workspace
         , ppExtras  = [windowCount]                           -- # of windows current workspace
         , ppOrder  = \(ws:l:t:ex) -> [ws,l]++ex++[t]
         }
