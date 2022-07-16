@@ -13,7 +13,7 @@ import qualified XMonad.Layout.MultiToggle as MT (Toggle(..))
 
 import XMonad.Actions.WithAll (sinkAll, killAll)
 
-import XMonad.Actions.CycleWS (moveTo, shiftTo, WSType(..), nextScreen, prevScreen, Direction1D(..))
+import XMonad.Actions.CycleWS (moveTo, shiftTo, WSType(..), nextScreen, prevScreen, Direction1D(..), emptyWS)
 import XMonad.Actions.Promote
 import XMonad.Actions.RotSlaves (rotSlavesDown, rotAllDown)
 import XMonad.Actions.WindowGo (runOrRaise)
@@ -91,8 +91,8 @@ myKeys home =
         , ("M-,", prevScreen)  -- Switch focus to prev monitor
         , ("M-S-<Right>", shiftTo Next nonNSP >> moveTo Next nonNSP)       -- Shifts focused window to next ws
         , ("M-S-<Left>", shiftTo Prev nonNSP >> moveTo Prev nonNSP)  -- Shifts focused window to prev ws
-        , ("M-C-<Right>", moveTo Next NonEmptyWS)       -- Shifts focused window to next ws
-        , ("M-C-<Left>", moveTo Prev NonEmptyWS)
+        , ("M-C-<Right>", moveTo Next (Not emptyWS))       -- Shifts focused window to next ws
+        , ("M-C-<Left>", moveTo Prev (Not emptyWS))
     -- Floating windows
         , ("M-f", sendMessage (T.Toggle "floats")) -- Toggles my 'floats' layout
         , ("M-t", withFocused $ windows . W.sink)  -- Push floating window back to tile

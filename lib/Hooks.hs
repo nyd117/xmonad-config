@@ -1,11 +1,14 @@
-module Hooks (myStartupHook, myManageHook, myLogHook, myLogHookWS, myLogHookBottom, setFullscreenSupported)
+module Hooks (myStartupHook, myManageHook, myLogHook, setFullscreenSupported, xmobarTop, xmobarBottom)
 where
 
 import XMonad
 import XMonad.Hooks.SetWMName
 import XMonad.Util.SpawnOnce
 import qualified XMonad.StackSet as W
-import XMonad.Hooks.DynamicLog (dynamicLogWithPP, wrap, xmobarPP, xmobarColor, shorten, PP(..),xmobarAction)
+
+import XMonad.Hooks.StatusBar
+import XMonad.Hooks.StatusBar.PP
+
 import XMonad.Hooks.ManageHelpers (isDialog, doCenterFloat, isInProperty)
 import XMonad.Hooks.InsertPosition
 
@@ -24,12 +27,13 @@ import Control.Monad
 
 import WorkSpaces
 import ScratchPads
+import Defaults (xColor, xColorFg)
 
 
 myStartupHook :: X ()
 myStartupHook = do { spawnOnce "lxpolkit &"
   ; spawnOnce "feh --bg-fill ~/Pictures/Wallpapers/arch_nz_cl4.png &"
-  ; spawnOnce "picom --experimental-backend &"
+  ; spawnOnce "picom --experimental-backends &"
   ; spawnOnce "mpd ~/.config/mpd/mpd.conf &"
   ; spawnOnce "dunst &"
   ; spawnOnce "udiskie --tray &"
@@ -64,26 +68,19 @@ myLogHook :: X ()
 myLogHook = fadeInactiveLogHook fadeAmount
     where fadeAmount = 1.0
 
-myLogHookWS h = dynamicLogWithPP . namedScratchpadFilterOutWorkspacePP $ wsPP { ppOutput = hPutStrLn h }
-
-myLogHookBottom h = dynamicLogWithPP . namedScratchpadFilterOutWorkspacePP $ wsPP { ppOutput = hPutStrLn h, ppOrder = \(ws:l:t:_)   -> [] }
-
-
-wsPP :: PP
-wsPP = xmobarPP
+wssPP :: PP
+wssPP = xmobarPP
         { -- ppOutput = \x -> hPutStrLn xmproc x
-          ppCurrent = xmobarColor "#90a959" "" . wrap "[ " " ]" -- Current workspace in xmobar
-        , ppVisible = xmobarColor "#90a959" "" . wrap " " " "   -- Visible but not current workspace
-        , ppHidden = xmobarColor "#6a9fb5" "" . wrap " *" " " . clickable (zip myWorkspaces myWorkspacesKeys)   -- Hidden workspaces in xmobar
-        , ppHiddenNoWindows = xmobarColor "#aa759f" "" . wrap " " " " . clickable (zip myWorkspaces myWorkspacesKeys)       -- Hidden workspaces (no windows)
-        , ppTitle = xmobarColor "#b3afc2" "" . shorten 120     -- Title of active window in xmobar
-        , ppSep =  "<fc=#d0d0d0> | </fc>"          -- Separators in xmobar
-        , ppUrgent = xmobarColor "#C45500" "" . wrap "! " " !" . clickable (zip myWorkspaces myWorkspacesKeys)  -- Urgent workspace
+          ppCurrent = xmobarColor (xColor "2") "" . wrap "[ " " ]" -- Current workspace in xmobar
+        , ppVisible = xmobarColor (xColor "2") "" . wrap " " " "   -- Visible but not current workspace
+        , ppHidden = xmobarColor (xColor "4") "" . wrap " *" " " . clickable (zip myWorkspaces myWorkspacesKeys)   -- Hidden workspaces in xmobar
+        , ppHiddenNoWindows = xmobarColor (xColor "13") "" . wrap " " " " . clickable (zip myWorkspaces myWorkspacesKeys)       -- Hidden workspaces (no windows)
+        , ppTitle = xmobarColor xColorFg "" . shorten 120     -- Title of active window in xmobar
+        , ppSep =  "<fc=" ++ xColorFg ++ "> | </fc>"          -- Separators in xmobar
+        , ppUrgent = xmobarColor (xColor "1") "" . wrap " !" "! " . clickable (zip myWorkspaces myWorkspacesKeys)  -- Urgent workspace
         , ppExtras  = [windowCount]                           -- # of windows current workspace
         , ppOrder  = \(ws:l:t:ex) -> [ws,l]++ex++[t]
         }
-
-
 
 windowCount :: X (Maybe String)
 windowCount = gets $ Just . show . length . W.integrate' . W.stack . W.workspace . W.current . windowset
@@ -100,7 +97,6 @@ isPopup = role =? "pop-up"
 setFullscreenSupported :: X ()
 setFullscreenSupported = addSupported ["_NET_WM_STATE", "_NET_WM_STATE_FULLSCREEN"]
 
-
 addSupported :: [String] -> X ()
 addSupported props = withDisplay $ \dpy -> do
     r <- asks theRoot
@@ -109,3 +105,6 @@ addSupported props = withDisplay $ \dpy -> do
     io $ do { supportedList <- fmap (join . maybeToList) $ getWindowProperty32 dpy a r
             ; changeProperty32 dpy r a aTOM propModeReplace (nub $ newSupportedList ++ supportedList)
             }
+
+xmobarTop = statusBarPropTo "_XMONAD_LOG_1" "xmobar -x 0 $HOME/.config/xmobar/xmobarrc" (pure (filterOutWsPP [scratchpadWorkspaceTag] $ wssPP))
+xmobarBottom = statusBarPropTo "_XMONAD_LOG_2" "xmobar -x 0 $HOME/.config/xmobar/xmobarrcBottom" (pure (filterOutWsPP [scratchpadWorkspaceTag] $ wssPP { ppOrder = \(ws:l:t:_) -> [] }))

@@ -1,9 +1,22 @@
-module Defaults (myFont, myModMask, myTerminal, myBrowser, myEditor, myBorderWidth, myNormColor, myFocusColor, altMask, searchList)
+module Defaults (myFont
+    , myModMask
+    , myTerminal
+    , myBrowser
+    , myEditor
+    , myBorderWidth
+    , myNormColor
+    , myFocusColor
+    , altMask
+    , searchList
+    , xColorBg
+    , xColorFg
+    , xColor)
 
 where 
 
 import XMonad
 import qualified XMonad.Actions.Search as S
+import Xresources (xProp)
 
 
 myFont :: String
@@ -27,10 +40,19 @@ myBorderWidth :: Dimension
 myBorderWidth = 0          -- Sets border width for windows
 
 myNormColor :: String
-myNormColor   = "#d0d0d0"  -- Border color of normal windows
+myNormColor   = xColorFg  -- Border color of normal windows
 
 myFocusColor :: String
-myFocusColor  = "#aa759f"  -- Border color of focused windows
+myFocusColor  = xColor "13"  -- Border color of focused windows
+
+xColorBg :: String
+xColorBg = xProp "*.background"
+
+xColorFg :: String
+xColorFg = xProp "*.foreground"
+
+xColor :: String -> String
+xColor a = xProp $ "*.color" ++ a
 
 altMask :: KeyMask
 altMask = mod1Mask         -- Setting this for use in xprompts

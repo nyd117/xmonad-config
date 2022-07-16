@@ -8,13 +8,13 @@ import qualified XMonad.StackSet as W
 import Data.Monoid
 
     -- Hooks
-import XMonad.Hooks.DynamicLog (dynamicLogWithPP, wrap, xmobarPP, xmobarColor, shorten, PP(..),xmobarAction)
 import XMonad.Hooks.EwmhDesktops  -- for some fullscreen events, also for xcomposite in obs.
-import XMonad.Hooks.ManageDocks (docksEventHook, manageDocks, ToggleStruts(..))
+import XMonad.Hooks.ManageDocks (docks, manageDocks, ToggleStruts(..))
 import XMonad.Hooks.ManageHelpers (isFullscreen, doFullFloat)
 import XMonad.Hooks.ServerMode
 import XMonad.Hooks.WorkspaceHistory
 import XMonad.Hooks.UrgencyHook
+import XMonad.Hooks.StatusBar
 
 import XMonad.Layout.ShowWName
 
@@ -35,11 +35,12 @@ import Hooks
 main :: IO ()
 main = do
     home <- getHomeDirectory
-    xmobarTop <- spawnPipe "xmobar -x 0 $HOME/.config/xmobar/xmobarrc"
-    xmobarBottom <- spawnPipe "xmobar -x 0 $HOME/.config/xmobar/xmobarrcBottom"
 
-    xmonad $ ewmh 
-           $ withUrgencyHook FocusHook 
+    xmonad $ withUrgencyHook FocusHook
+           $ withSB (xmobarTop <> xmobarBottom)
+           $ ewmhFullscreen
+           $ ewmh
+           $ docks
            $ def
           { manageHook = ( isFullscreen --> doFullFloat ) <+> myManageHook <+> manageDocks
           -- Run xmonad commands from command line with "xmonadctl command". Commands include:
@@ -50,8 +51,6 @@ main = do
           , handleEventHook    = serverModeEventHookCmd
                                  <+> serverModeEventHook
                                  <+> serverModeEventHookF "XMONAD_PRINT" (io . putStrLn)
-                                 <+> docksEventHook
-                                 <+> fullscreenEventHook
           , modMask            = myModMask
           , terminal           = myTerminal
           , startupHook        = myStartupHook <+> setFullscreenSupported -- the last overrides any previous behaviour that is already defined so setFullscreenSupported goes last
@@ -61,10 +60,7 @@ main = do
           , normalBorderColor  = myNormColor
           , focusedBorderColor = myFocusColor
           , logHook = workspaceHistoryHook 
-                      <+> myLogHook 
-                      <+> myLogHookWS xmobarTop -- >> hPutStrLn xmproc1 x
-                      <+> myLogHookBottom xmobarBottom
-
+                      <+> myLogHook
           } `additionalKeysP` myKeys home
 
 -- Debuging example write a function and bind it to a key
